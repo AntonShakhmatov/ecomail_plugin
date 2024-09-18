@@ -3,7 +3,8 @@
 //CF7 MergeTag settings
 add_action('admin_init', 'cf7_mergeTag_settings_init');
 
-function cf7_mergeTag_settings_init() {
+function cf7_mergeTag_settings_init()
+{
     add_settings_section(
         'cf7_mergeTag_section',
         'CF7 MergeTag settings',
@@ -13,8 +14,8 @@ function cf7_mergeTag_settings_init() {
 
     // Přidání polí
     $form_id = null;
-    if(isset($_GET['post'])){
-    $form_id = $_GET['post'];
+    if (isset($_GET['post'])) {
+        $form_id = $_GET['post'];
     }
 
     add_settings_field(
@@ -128,13 +129,15 @@ function cf7_mergeTag_settings_init() {
     register_setting('cf7_mergeTag', 'cf7_mergeTag_url_section_settings_' . $form_id);
 }
 
-function cf7_mergeTag_section_callback() {
+function cf7_mergeTag_section_callback()
+{
     echo 'Put in actual mergeTag settings';
     echo '<h3>MergeTag fields settings</h3>';
     echo '<p>Set the fields tags for sending transactions mails:</p>';
 }
 
-function cf7_mergeTag_transaction_mail_form_id_callback_1($args) {
+function cf7_mergeTag_transaction_mail_form_id_callback_1($args)
+{
     global $wpdb;
     $form_id = esc_attr($args['form_id']);
 
@@ -143,7 +146,7 @@ function cf7_mergeTag_transaction_mail_form_id_callback_1($args) {
     for ($i = 1; $i <= 2000; $i++) {
         $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}' ORDER BY option_id ASC");
         if ($array) {
-            foreach($array as $result) {
+            foreach ($array as $result) {
                 $option_ids[] = $result->option_id;
             }
         }
@@ -161,7 +164,8 @@ function cf7_mergeTag_transaction_mail_form_id_callback_1($args) {
     echo '<input type="text" name="cf7_mergeTag_template_form_id_' . $form_id . '_template_id_1" value="' . $fields_string . '" ><br>';
 }
 
-function cf7_mergeTag_transaction_mail_custom_for_template_id_callback_1($args) {
+function cf7_mergeTag_transaction_mail_custom_for_template_id_callback_1($args)
+{
     global $wpdb;
     $form_id = esc_attr($args['form_id']);
 
@@ -171,19 +175,19 @@ function cf7_mergeTag_transaction_mail_custom_for_template_id_callback_1($args) 
     for ($i = 1; $i <= 2000; $i++) {
         $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}' ORDER BY option_id ASC");
         if ($array) {
-            foreach($array as $result) {
+            foreach ($array as $result) {
                 $option_ids[] = $result->option_id;
             }
         }
     }
 
     // Сортировка данных
-        sort($option_ids);
+    sort($option_ids);
 
     // Вывод отсортированных данных
-        foreach ($option_ids as $option_id) {
-            $arr[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
-        }
+    foreach ($option_ids as $option_id) {
+        $arr[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
+    }
 
     $subject_value = esc_attr(get_option('cf7_mergeTag_template_form_id_' . $form_id . '_template_id_' . $arr[0] . '_subject'));
 
@@ -193,8 +197,8 @@ function cf7_mergeTag_transaction_mail_custom_for_template_id_callback_1($args) 
 
     //Убирает первое поле(template_id)
     $isFirst = true;
-    foreach($arr as $field){
-        if($isFirst) {
+    foreach ($arr as $field) {
+        if ($isFirst) {
             $isFirst = false;
             continue;
         }
@@ -211,31 +215,36 @@ function cf7_mergeTag_transaction_mail_custom_for_template_id_callback_1($args) 
     }
 }
 
-function cf7_mergeTag_name_form_callback($args){
+function cf7_mergeTag_name_form_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $name = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_name");
     echo "<input type='text' name='cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_name' value='$name'><br>";
 }
 
-function cf7_mergeTag_email_form_callback($args){
+function cf7_mergeTag_email_form_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $email = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email");
     echo "<input type='text' name='cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email' value='$email'><br>";
 }
 
-function cf7_mergeTag_subject_form_callback($args){
+function cf7_mergeTag_subject_form_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $subject = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_subject");
     echo "<input type='text' name='cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_subject' value='$subject'><br>";
 }
 
-function cf7_mergeTag_email_field_form_callback($args){
+function cf7_mergeTag_email_field_form_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $email_field = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email_field");
     echo "<input type='text' name='cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email_field' value='$email_field'><br>";
 }
 
-function cf7_mergeTag_callback($args) {
+function cf7_mergeTag_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $mergeTag = esc_attr(get_option('contact_form_field_text_merge_tag_' . $form_id));
     $selected_option = esc_attr(get_option('contact_form_field_text_merge_type_' . $form_id));
@@ -252,7 +261,8 @@ function cf7_mergeTag_callback($args) {
     echo "<label for='contact_form_field_date_merge_tag_first_{$form_id}'>Field name:<input type='text' id='contact_form_field_date_merge_tag_first_{$form_id}' name='contact_form_field_date_merge_tag_first_{$form_id}' value='$first'/></label>";
 }
 
-function cf7_mergeTag_date_callback($args) {
+function cf7_mergeTag_date_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $mergeTag = esc_attr(get_option('contact_form_field_date_merge_tag_' . $form_id));
     $selected_option = esc_attr(get_option('contact_form_field_date_merge_type_' . $form_id));
@@ -269,7 +279,8 @@ function cf7_mergeTag_date_callback($args) {
     echo "<label for='contact_form_field_date_merge_tag_second_{$form_id}'>Field name:<input type='text' id='contact_form_field_date_merge_tag_second_{$form_id}' name='contact_form_field_date_merge_tag_second_{$form_id}' value='$second'/></label>";
 }
 
-function cf7_mergeTag_json_callback($args) {
+function cf7_mergeTag_json_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $mergeTag = esc_attr(get_option('contact_form_field_json_merge_tag_' . $form_id));
     $selected_option = esc_attr(get_option('contact_form_field_json_merge_type_' . $form_id));
@@ -285,10 +296,10 @@ function cf7_mergeTag_json_callback($args) {
               <option value='url' " . selected($selected_option, 'url', false) . ">url</option>
         </select>";
     echo "<label for='contact_form_field_date_merge_tag_third_{$form_id}'>Field name:<input type='text' id='contact_form_field_date_merge_tag_third_{$form_id}' name='contact_form_field_date_merge_tag_third_{$form_id}' value='$third'/></label>";
-
 }
 
-function cf7_mergeTag_number_callback($args) {
+function cf7_mergeTag_number_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $mergeTag = esc_attr(get_option('contact_form_field_number_merge_tag_' . $form_id));
     $selected_option = esc_attr(get_option('contact_form_field_number_merge_type_' . $form_id));
@@ -305,7 +316,8 @@ function cf7_mergeTag_number_callback($args) {
     echo "<label for='contact_form_field_date_merge_tag_fourth_{$form_id}'>Field name:<input type='text' id='contact_form_field_date_merge_tag_fourth_{$form_id}' name='contact_form_field_date_merge_tag_fourth_{$form_id}' value='$fourth'/></label>";
 }
 
-function cf7_mergeTag_url_callback($args) {
+function cf7_mergeTag_url_callback($args)
+{
     $form_id = esc_attr($args['form_id']);
     $mergeTag = esc_attr(get_option('contact_form_field_url_merge_tag_' . $form_id));
     $selected_option = esc_attr(get_option('contact_form_field_url_merge_type_' . $form_id));
@@ -323,7 +335,7 @@ function cf7_mergeTag_url_callback($args) {
 }
 
 if (isset($_POST['submit']) && $_POST['submit'] == 'Add mergeTag settings') {
-    if(isset($_GET['post'])){
+    if (isset($_GET['post'])) {
         $form_id = $_GET['post'];
     }
     update_option('contact_form_field_text_merge_tag_' . $form_id, $_POST['contact_form_field_text_merge_tag_' . $form_id]);
@@ -348,7 +360,7 @@ if (isset($_POST['submit']) && $_POST['submit'] == 'Add mergeTag settings') {
     update_option('contact_form_field_date_merge_tag_fourth_' . $form_id, $_POST['contact_form_field_date_merge_tag_fourth_' . $form_id]);
     update_option('contact_form_field_date_merge_tag_fifth_' . $form_id, $_POST['contact_form_field_date_merge_tag_fifth_' . $form_id]);
 
-//    update_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_template_id", $_POST["cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_template_id"]);
+    //    update_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_template_id", $_POST["cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_template_id"]);
     update_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_name", $_POST["cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_name"]);
     update_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email", $_POST["cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email"]);
     update_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_subject", $_POST["cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_subject"]);
@@ -366,7 +378,7 @@ if (isset($_POST['submit']) && $_POST['submit'] == 'Add mergeTag settings') {
         }
 
         // Запись новых значений template_id
-        foreach($rows_array as $key => $row){
+        foreach ($rows_array as $key => $row) {
             $template_id_option = 'cf7_mergeTag_template_form_id_' . $form_id . '_template_id_' . $row;
             update_option($template_id_option, $row);
 
@@ -379,22 +391,22 @@ if (isset($_POST['submit']) && $_POST['submit'] == 'Add mergeTag settings') {
             update_option($subject_field_name, $subject);
         }
     }
-
 }
 
-add_filter( 'wpcf7_editor_panels', function($panels) {
+add_filter('wpcf7_editor_panels', function ($panels) {
     $panels['mergetag-panel'] = array(
-        'title' => __( 'MergeTag settings', 'contact-form-7' ),
+        'title' => __('MergeTag settings', 'contact-form-7'),
         'callback' => 'cf7_mergeTag_form_fields'
     );
     return $panels;
 });
 
-add_action( 'wpcf7_save_mergetag_form', 'cf7_mergeTag_form_fields');
+add_action('wpcf7_save_mergetag_form', 'cf7_mergeTag_form_fields');
 
 // Nastavení pluginu
-function cf7_mergeTag_form_fields() {
-    ?>
+function cf7_mergeTag_form_fields()
+{
+?>
     <div class="wrap">
         <form method="post" action="">
             <?php
@@ -404,5 +416,5 @@ function cf7_mergeTag_form_fields() {
             ?>
         </form>
     </div>
-    <?php
+<?php
 }

@@ -1,6 +1,6 @@
 <?php
 
-require_once ECOMAIL_CF7_INTEGRATION_DIR . 'ecomail-cf7-integration.php';
+require_once ECOMAIL_CF7_INTEGRATION_DIR . 'table_functions.php';
 require_once ECOMAIL_CF7_INTEGRATION_DIR . 'ecomail-api.php';
 require_once ECOMAIL_CF7_INTEGRATION_DIR . 'cron_schedule.php';
 require_once ECOMAIL_CF7_INTEGRATION_DIR . 'edit-contact-form.php';
@@ -11,7 +11,8 @@ require_once ECOMAIL_CF7_INTEGRATION_DIR . 'second-tab-edit-contact-form.php';
 // Integrace s CF7
 add_action('wpcf7_before_send_mail', 'ecomail_cf7_integration_before_send_mail');
 
-function ecomail_cf7_integration_before_send_mail($cf7) {
+function ecomail_cf7_integration_before_send_mail($cf7)
+{
     global $wpdb;
     // Získání hodnot polí CF7
     $submission = WPCF7_Submission::get_instance();
@@ -22,7 +23,7 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
         $form_id = $cf7->id();
         $api_key = get_option('ecomail_api_key_1');
         $api = new EcomailApi($api_key);
-        $forms = get_posts( array(
+        $forms = get_posts(array(
             'post_type' => 'wpcf7_contact_form',
             'post_status' => 'publish',
             'numberposts' => -1
@@ -30,7 +31,7 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
 
         //Поиск id актуальной формы
         $found = false;
-        foreach ( $forms as $form ) {
+        foreach ($forms as $form) {
             $form_id = $form->ID;
             if ($form_id == $cf7->id()) {
                 $found = true;
@@ -45,7 +46,7 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
         $email_field = get_option('contact_form_field_email_' . $form_id);
         $mail = $posted_data[$email_field];
         // Kontrola přítomnosti e-mailové adresy ve formuláři
-        if (isset($mail)){
+        if (isset($mail)) {
             //email
             $get_email_field = get_option('contact_form_field_email_' . $form_id);
             $email = $posted_data[$get_email_field];
@@ -71,7 +72,7 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
             for ($i = 1; $i <= 2000; $i++) {
                 $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'ecomail_list_id_{$form_id}_template_id_{$i}' ORDER BY option_id ASC");
                 if ($array) {
-                    foreach($array as $result) {
+                    foreach ($array as $result) {
                         $ecomail_option_ids[] = $result->option_id;
                     }
                 }
@@ -86,13 +87,13 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
             }
 
             $min_template_id = $template_id[0];
-//            $value_with_min_template_id = $template_id[$min_template_id];
+            //            $value_with_min_template_id = $template_id[$min_template_id];
 
             //Массив осташихся шаблонов
             $remaining_template_id = array();
 
-            foreach($template_id as $key => $value) {
-                if($key > array_search($min_template_id, $template_id)) {
+            foreach ($template_id as $key => $value) {
+                if ($key > array_search($min_template_id, $template_id)) {
                     $remaining_template_id[$key] = $value;
                 }
             }
@@ -100,7 +101,7 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
             for ($i = 1; $i <= 2000; $i++) {
                 $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'ecomail_list_id_{$form_id}_template_id_{$i}_email' ORDER BY option_id ASC");
                 if ($array) {
-                    foreach($array as $result) {
+                    foreach ($array as $result) {
                         $ecomail_option_email_id[] = $result->option_id;
                     }
                 }
@@ -121,7 +122,7 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
             for ($i = 1; $i <= 2000; $i++) {
                 $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'ecomail_list_id_{$form_id}_template_id_{$i}_subject' ORDER BY option_id ASC");
                 if ($array) {
-                    foreach($array as $result) {
+                    foreach ($array as $result) {
                         $ecomail_ids[] = $result->option_id;
                     }
                 }
@@ -158,11 +159,12 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
             $result = $wpdb->insert(
                 $table_name,
                 array(
-                    'name' => $name ? $name: '',
-                    'surname' => $surname ? $surname: '',
-                    'email' => $email ? $email: '',
-                    'phone' => $phone ? $phone: ''
-                ));
+                    'name' => $name ? $name : '',
+                    'surname' => $surname ? $surname : '',
+                    'email' => $email ? $email : '',
+                    'phone' => $phone ? $phone : ''
+                )
+            );
 
             foreach ($remaining_template_id as $key => $remaining_id) {
                 $subject_id = $subject_ids[$key];
@@ -172,59 +174,61 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
                 $wpdb->insert(
                     $table_name_3,
                     array(
-                        'template_id' => $remaining_id ? $remaining_id: '', //добавить поля из базы данных
-                        'subject' => $subject_id ? $subject_id: '',
+                        'template_id' => $remaining_id ? $remaining_id : '', //добавить поля из базы данных
+                        'subject' => $subject_id ? $subject_id : '',
                         'from_name' => $adminName,
                         'from_email' => $adminEmail,
                         'reply_to' => $adminEmail,
-                        'email' => $email_id ? $email_id: '',
-                        'name' => $adminName ? $adminName: '',
-                        'mergeTagName' => $name ? $name: '',
-                        'mergeTagSurname' => $surname ? $surname: '',
-                        'mergeTagEmail' => $email ? $email: '',
-                        'mergeTagPhone' => $phone ? $phone: '',
+                        'email' => $email_id ? $email_id : '',
+                        'name' => $adminName ? $adminName : '',
+                        'mergeTagName' => $name ? $name : '',
+                        'mergeTagSurname' => $surname ? $surname : '',
+                        'mergeTagEmail' => $email ? $email : '',
+                        'mergeTagPhone' => $phone ? $phone : '',
                         'content' => $name . $email . $phone
                     )
                 );
             }
 
             global $wpdb;
-            $table_name_2 = $wpdb->prefix .'transactional_mail';
+            $table_name_2 = $wpdb->prefix . 'transactional_mail';
             $wpdb->insert(
                 $table_name_2,
                 array(
-                    'template_id' => $min_template_id ? $min_template_id: '', //добавить поля из базы данных
-                    'subject' => $min_subject_id ? $min_subject_id: '',
+                    'template_id' => $min_template_id ? $min_template_id : '', //добавить поля из базы данных
+                    'subject' => $min_subject_id ? $min_subject_id : '',
                     'from_name' => $adminName,
                     'from_email' => $adminEmail,
                     'reply_to' => $adminEmail,
-                    'email' => $email ? $email: '',
-                    'name' => $name ? $name: '',
-                    'mergeTagName' => $name ? $name: '',
-                    'mergeTagSurname' => $surname ? $surname: '',
-                    'mergeTagEmail' => $email ? $email: '',
-                    'mergeTagPhone' => $phone ? $phone: '',
+                    'email' => $email ? $email : '',
+                    'name' => $name ? $name : '',
+                    'mergeTagName' => $name ? $name : '',
+                    'mergeTagSurname' => $surname ? $surname : '',
+                    'mergeTagEmail' => $email ? $email : '',
+                    'mergeTagPhone' => $phone ? $phone : '',
                     'content' => $name . ' ' . $surname .  ' '  . 'has joined to subscribers' . ' mail is: ' .  $email
-                ));
+                )
+            );
 
             global $wpdb;
-            $table_name_4 = $wpdb->prefix .'transactional_mail_copy';
+            $table_name_4 = $wpdb->prefix . 'transactional_mail_copy';
             $wpdb->insert(
                 $table_name_4,
                 array(
-                    'template_id' => $min_template_id ? $min_template_id: '', //добавить поля из базы данных
-                    'subject' => $min_subject_id ? $min_subject_id: '',
+                    'template_id' => $min_template_id ? $min_template_id : '', //добавить поля из базы данных
+                    'subject' => $min_subject_id ? $min_subject_id : '',
                     'from_name' => $adminName,
                     'from_email' => $adminEmail,
                     'reply_to' => $adminEmail,
-                    'email' => $email ? $email: '',
-                    'name' => $name ? $name: '',
-                    'mergeTagName' => $name ? $name: '',
-                    'mergeTagSurname' => $surname ? $surname: '',
-                    'mergeTagEmail' => $email ? $email: '',
-                    'mergeTagPhone' => $phone ? $phone: '',
+                    'email' => $email ? $email : '',
+                    'name' => $name ? $name : '',
+                    'mergeTagName' => $name ? $name : '',
+                    'mergeTagSurname' => $surname ? $surname : '',
+                    'mergeTagEmail' => $email ? $email : '',
+                    'mergeTagPhone' => $phone ? $phone : '',
                     'content' => $name . $email . $phone
-                ));
+                )
+            );
 
 
             // Pokud se uložení kontaktu v Ecomail nezdařilo, uloží jej do databáze
@@ -301,7 +305,9 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
                             'type' => $mergeTagDateUrlType
                         )
                     ),
-                    FALSE, TRUE, TRUE
+                    FALSE,
+                    TRUE,
+                    TRUE
                 ));
             }
         }
@@ -310,140 +316,142 @@ function ecomail_cf7_integration_before_send_mail($cf7) {
         $email_field_2 = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email_field");
         $mail2 = $posted_data[$email_field_2];
         // Kontrola přítomnosti e-mailové adresy ve formuláři
-        if (isset($mail2)){
-        global $wpdb;
-        $fromName = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_name");
-        $fromEmail = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email");
+        if (isset($mail2)) {
+            global $wpdb;
+            $fromName = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_name");
+            $fromEmail = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email");
 
-        $email_field_name = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email_field");
-        $field_name_for_email = $posted_data[$email_field_name];
-        //first
-        $first_field = get_option('contact_form_field_date_merge_tag_first_' . $form_id);
-        $first = $posted_data[$first_field];
-        //second
-        $second_field = get_option('contact_form_field_date_merge_tag_second_' . $form_id);
-        $second = $posted_data[$second_field];
-        //third
-        $third_field = get_option('contact_form_field_date_merge_tag_third_' . $form_id);
-        $third = $posted_data[$third_field];
-        //fourth
-        $fourth_field = get_option('contact_form_field_date_merge_tag_fourth_' . $form_id);
-        $fourth = $posted_data[$fourth_field];
-        //fifth
-        $fifth_field = get_option('contact_form_field_date_merge_tag_fifth_' . $form_id);
-        $fifth = $posted_data[$fifth_field];
+            $email_field_name = get_option("cf7_mergeTag_form_id_{$form_id}_transactional_mail_form_email_field");
+            $field_name_for_email = $posted_data[$email_field_name];
+            //first
+            $first_field = get_option('contact_form_field_date_merge_tag_first_' . $form_id);
+            $first = $posted_data[$first_field];
+            //second
+            $second_field = get_option('contact_form_field_date_merge_tag_second_' . $form_id);
+            $second = $posted_data[$second_field];
+            //third
+            $third_field = get_option('contact_form_field_date_merge_tag_third_' . $form_id);
+            $third = $posted_data[$third_field];
+            //fourth
+            $fourth_field = get_option('contact_form_field_date_merge_tag_fourth_' . $form_id);
+            $fourth = $posted_data[$fourth_field];
+            //fifth
+            $fifth_field = get_option('contact_form_field_date_merge_tag_fifth_' . $form_id);
+            $fifth = $posted_data[$fifth_field];
 
-        for ($i = 1; $i <= 2000; $i++) {
-            $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}' ORDER BY option_id ASC");
-            if ($array) {
-               foreach($array as $result) {
-                   $option_ids[] = $result->option_id;
-               }
+            for ($i = 1; $i <= 2000; $i++) {
+                $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}' ORDER BY option_id ASC");
+                if ($array) {
+                    foreach ($array as $result) {
+                        $option_ids[] = $result->option_id;
+                    }
+                }
             }
-        }
 
-        // Сортировка данных
-        sort($option_ids);
-
-        // Вывод отсортированных данных
-        foreach ($option_ids as $option_id) {
-            $template_id[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
-        }
-
-        $min_id = $template_id[0];
-
-        //Массив осташихся шаблонов
-        $remaining_ids = array();
-
-        foreach($template_id as $key => $value) {
-           if($key > array_search($min_id, $template_id)) {
-              $remaining_ids[$key] = $value;
-           }
-        }
-
-        for ($i = 1; $i <= 2000; $i++) {
-             $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}_email' ORDER BY option_id ASC");
-             if ($array) {
-                 foreach($array as $result) {
-                        $option_email_id[] = $result->option_id;
-                 }
-             }
-        }
-
-        // Сортировка данных
-        sort($option_email_id);
-
-        // Вывод отсортированных данных
-        foreach ($option_email_id as $option_id) {
-            $admin_emails[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
-        }
-
-        $email_min = $admin_emails[0];
-
-        $email_ids = $admin_emails;
-
-        for ($i = 1; $i <= 2000; $i++) {
-             $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}_subject' ORDER BY option_id ASC");
-             if ($array) {
-                 foreach($array as $result) {
-                        $ids[] = $result->option_id;
-                 }
-             }
-        }
-
-        // Сортировка данных
-        sort($ids);
+            // Сортировка данных
+            sort($option_ids);
 
             // Вывод отсортированных данных
-        foreach ($ids as $option_id) {
-            $subjects_emails[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
-        }
+            foreach ($option_ids as $option_id) {
+                $template_id[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
+            }
 
-        $subjects_min = $subjects_emails[0];
+            $min_id = $template_id[0];
 
-        $subject_ids = $subjects_emails;
+            //Массив осташихся шаблонов
+            $remaining_ids = array();
 
-        foreach ($remaining_ids as $key => $remaining_id) {
-            $subject_id = $subject_ids[$key];// Используем ключи для получения соответствующего email_id
-            $email_id = $email_ids[$key];
-            $table_name_5 = $wpdb->prefix . 'transactional_mail_third';
+            foreach ($template_id as $key => $value) {
+                if ($key > array_search($min_id, $template_id)) {
+                    $remaining_ids[$key] = $value;
+                }
+            }
+
+            for ($i = 1; $i <= 2000; $i++) {
+                $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}_email' ORDER BY option_id ASC");
+                if ($array) {
+                    foreach ($array as $result) {
+                        $option_email_id[] = $result->option_id;
+                    }
+                }
+            }
+
+            // Сортировка данных
+            sort($option_email_id);
+
+            // Вывод отсортированных данных
+            foreach ($option_email_id as $option_id) {
+                $admin_emails[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
+            }
+
+            $email_min = $admin_emails[0];
+
+            $email_ids = $admin_emails;
+
+            for ($i = 1; $i <= 2000; $i++) {
+                $array = $wpdb->get_results("SELECT option_id FROM {$wpdb->prefix}options WHERE option_name = 'cf7_mergeTag_template_form_id_{$form_id}_template_id_{$i}_subject' ORDER BY option_id ASC");
+                if ($array) {
+                    foreach ($array as $result) {
+                        $ids[] = $result->option_id;
+                    }
+                }
+            }
+
+            // Сортировка данных
+            sort($ids);
+
+            // Вывод отсортированных данных
+            foreach ($ids as $option_id) {
+                $subjects_emails[] = $wpdb->get_var("SELECT option_value FROM {$wpdb->prefix}options WHERE option_id = $option_id");
+            }
+
+            $subjects_min = $subjects_emails[0];
+
+            $subject_ids = $subjects_emails;
+
+            foreach ($remaining_ids as $key => $remaining_id) {
+                $subject_id = $subject_ids[$key]; // Используем ключи для получения соответствующего email_id
+                $email_id = $email_ids[$key];
+                $table_name_5 = $wpdb->prefix . 'transactional_mail_third';
+                $wpdb->insert(
+                    $table_name_5,
+                    array(
+                        'template_id' => $remaining_id ? $remaining_id : '',
+                        'subject' => $subject_id ? $subject_id : '',
+                        'from_name' => $fromName ? $fromName : '',
+                        'from_email' => $fromEmail ? $fromEmail : '',
+                        'reply_to' => $fromEmail ? $fromEmail : '',
+                        'html' => '<b>Email HTML content</b>',
+                        'email' => $email_id ? $email_id : '',
+                        'mergeTagFirst' => $first ? $first : '',
+                        'mergeTagSecond' => $second ? $second : '',
+                        'mergeTagThird' => $third ? $third : '',
+                        'mergeTagFourth' => $fourth ? $fourth : '',
+                        'mergeTagFifth' => $fifth ? $fifth : '',
+                        'form_id' => $form_id ? $form_id : ''
+                    )
+                );
+            }
+
+            $table_name_6 = $wpdb->prefix . 'transactional_mail_fourth';
             $wpdb->insert(
-                $table_name_5,
+                $table_name_6,
                 array(
-                    'template_id' => $remaining_id ? $remaining_id : '',
-                    'subject' => $subject_id ? $subject_id : '',
+                    'template_id' => $min_id ? $min_id : '',
+                    'subject' => $subjects_min ? $subjects_min : '',
                     'from_name' => $fromName ? $fromName : '',
                     'from_email' => $fromEmail ? $fromEmail : '',
                     'reply_to' => $fromEmail ? $fromEmail : '',
                     'html' => '<b>Email HTML content</b>',
-                    'email' => $email_id ? $email_id : '',
+                    'email' => $field_name_for_email ? $field_name_for_email : '',
                     'mergeTagFirst' => $first ? $first : '',
                     'mergeTagSecond' => $second ? $second : '',
                     'mergeTagThird' => $third ? $third : '',
                     'mergeTagFourth' => $fourth ? $fourth : '',
                     'mergeTagFifth' => $fifth ? $fifth : '',
                     'form_id' => $form_id ? $form_id : ''
-                ));
-        }
-
-        $table_name_6 = $wpdb->prefix .'transactional_mail_fourth';
-            $wpdb->insert(
-            $table_name_6,
-            array(
-                    'template_id' => $min_id ? $min_id: '',
-                    'subject' => $subjects_min ? $subjects_min: '',
-                    'from_name' => $fromName ? $fromName: '',
-                    'from_email' => $fromEmail ? $fromEmail: '',
-                    'reply_to' => $fromEmail ? $fromEmail: '',
-                    'html' => '<b>Email HTML content</b>',
-                    'email' => $field_name_for_email ? $field_name_for_email: '',
-                    'mergeTagFirst' => $first ? $first: '',
-                    'mergeTagSecond' => $second ? $second: '',
-                    'mergeTagThird' => $third ? $third: '',
-                    'mergeTagFourth' => $fourth ? $fourth: '',
-                    'mergeTagFifth' => $fifth ? $fifth: '',
-                    'form_id' => $form_id ? $form_id: ''
-            ));
+                )
+            );
         }
     }
 }

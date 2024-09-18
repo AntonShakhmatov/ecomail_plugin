@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Ecomail CF7 Integration
  * Description: Plugin pro integrace do ecomailu
@@ -33,12 +34,13 @@ require_once ECOMAIL_CF7_INTEGRATION_DIR . 'cron_schedule.php';
 //Jsou tabulky, které se přidávají při aktivaci pluginu
 
 //subscribers tabulka, ve které jsou zapsáni všichni účastníci ecomailu
-function addSubscriber() {
-  global $wpdb;
-  $charset_collate = $wpdb->get_charset_collate();
+function addSubscriber()
+{
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
 
-  $table_name = $wpdb->prefix . 'subscribers';
-  $sql = "CREATE TABLE $table_name (
+    $table_name = $wpdb->prefix . 'subscribers';
+    $sql = "CREATE TABLE $table_name (
       subscriber_id INT(11) NOT NULL AUTO_INCREMENT,
       email VARCHAR(255) NOT NULL,
       name VARCHAR(255) NOT NULL,
@@ -47,14 +49,15 @@ function addSubscriber() {
       PRIMARY KEY (subscriber_id)
   )$charset_collate;";
 
-  require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-  dbDelta( $sql );
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
 }
 
-register_activation_hook( __FILE__, 'addSubscriber' );
+register_activation_hook(__FILE__, 'addSubscriber');
 
 //tabulka ktera se vyuziva cronem, bere prvni prvek pole
-function addTransactionMailFields() {
+function addTransactionMailFields()
+{
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
@@ -76,14 +79,15 @@ function addTransactionMailFields() {
     PRIMARY KEY (transactional_mail_id)
     )$charset_collate;";
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql_4 );
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_4);
 }
 
-register_activation_hook( __FILE__, 'addTransactionMailFields' );
+register_activation_hook(__FILE__, 'addTransactionMailFields');
 
 //tabulka ktera se vyuziva cronem, bere prvni zbytek pole, spojen s "transactional_mail"
-function addSecondTransactionMailFields() {
+function addSecondTransactionMailFields()
+{
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
@@ -105,13 +109,14 @@ function addSecondTransactionMailFields() {
     PRIMARY KEY (second_transactional_mail_id)
     )$charset_collate;";
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql_5 );
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_5);
 }
 
-register_activation_hook( __FILE__, 'addSecondTransactionMailFields' );
+register_activation_hook(__FILE__, 'addSecondTransactionMailFields');
 
-function addTransactionMailCopyFields() {
+function addTransactionMailCopyFields()
+{
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
@@ -133,14 +138,15 @@ function addTransactionMailCopyFields() {
     PRIMARY KEY (transactional_mail_copy_id)
     )$charset_collate;";
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql_6 );
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_6);
 }
 
-register_activation_hook( __FILE__, 'addTransactionMailCopyFields' );
+register_activation_hook(__FILE__, 'addTransactionMailCopyFields');
 
 //tabulka ktera se vyuziva cronem, bere prvni prvek pole
-function addFourthTransactionMailFields() {
+function addFourthTransactionMailFields()
+{
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
@@ -164,14 +170,15 @@ function addFourthTransactionMailFields() {
     PRIMARY KEY (fourth_transactional_mail_id)
     )$charset_collate;";
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql_8 );
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_8);
 }
 
-register_activation_hook( __FILE__, 'addFourthTransactionMailFields' );
+register_activation_hook(__FILE__, 'addFourthTransactionMailFields');
 
 //tabulka ktera se vyuziva cronem, bere prvni zbytek pole, spojen s "transactional_mail_fourth"
-function addTransactionMailThirdFields() {
+function addTransactionMailThirdFields()
+{
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
@@ -195,8 +202,8 @@ function addTransactionMailThirdFields() {
     PRIMARY KEY (third_transactional_mail_id)
     )$charset_collate;";
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql_7 );
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_7);
 }
 
-register_activation_hook( __FILE__, 'addTransactionMailThirdFields' );
+register_activation_hook(__FILE__, 'addTransactionMailThirdFields');
